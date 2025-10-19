@@ -57,18 +57,18 @@ export const profileConfig: ProfileConfig = {
 	name: "KismetPro",
 	bio: "如无必要，勿增实体。",
 	links: [
-		{
-			name: "Twitter",
-			icon: "fa6-brands:twitter", // 图标代码可在 https://icones.js.org/ 查询
-			// 如果图标集未包含，需要安装对应的包
-			// 例如执行 `pnpm add @iconify-json/<icon-set-name>`
-			url: "https://twitter.com",
-		},
-		{
-			name: "Steam",
-			icon: "fa6-brands:steam",
-			url: "https://store.steampowered.com",
-		},
+		// {
+		// 	name: "Twitter",
+		// 	icon: "fa6-brands:twitter", // 图标代码可在 https://icones.js.org/ 查询
+		// 	// 如果图标集未包含，需要安装对应的包
+		// 	// 例如执行 `pnpm add @iconify-json/<icon-set-name>`
+		// 	url: "https://twitter.com",
+		// },
+		// {
+		// 	name: "Steam",
+		// 	icon: "fa6-brands:steam",
+		// 	url: "https://store.steampowered.com",
+		// },
 		{
 			name: "GitHub",
 			icon: "fa6-brands:github",

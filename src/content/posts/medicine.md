@@ -1,5 +1,5 @@
 ---
-title: 学习医学论文记录
+title: 学习医学论文记录/Study medical paper records
 published: 2025-10-19
 description: ''
 image: ''

@@ -19,14 +19,12 @@ def create_markdown_file(post_id, title, published_date, image_url, body_content
     # 描述可以简单地使用标题
     description = clean_title
 
-    # 如果没有图片，image 字段留空
+    # frontmatter 中的 image 字段，如果图片存在则填入 URL，否则为空
     image_frontmatter = f"image: '{image_url}'" if image_url else "image: ''"
 
-    # 格式化正文，确保图片和来源格式正确
+    # 格式化正文
+    # 【修改点】不再向正文中添加 ![alt](url) 图片标签
     body_markdown = ""
-    if image_url:
-        body_markdown += f"![{clean_title}]({image_url})\n\n"
-    
     body_markdown += f"## {title}\n\n"
     body_markdown += f"{body_content.strip()}\n\n"
     

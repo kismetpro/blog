@@ -12,7 +12,7 @@ export const siteConfig: SiteConfig = {
 	subtitle: "我的小破站",
 	lang: "zh_CN", // 语言代码，例如 'en'、'zh_CN'、'ja' 等
 	themeColor: {
-		hue: 100, // 主题颜色的默认色相值，范围从 0 到 360。例如：红色 0，青色 200，蓝色 250，粉色 345
+		hue: 220, // 主题颜色的默认色相值，范围从 0 到 360。例如：红色 0，青色 200，蓝色 250，粉色 345
 		fixed: false, // 是否隐藏主题色选择器（对访问者）
 	},
 	banner: {

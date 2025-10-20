@@ -28,6 +28,16 @@ jobs:
       - name: Run scraper script
         run: python scraper.py
 
+      # 【新增的调试步骤】
+      # 这一步会列出工作目录的内容，特别是我们关心的图片和md文件
+      # 如果图片下载成功，你应该能在这里看到它们的文件名
+      - name: Debug - List created files
+        run: |
+          echo "--- Listing src/content/posts/ ---"
+          ls -l src/content/posts/
+          echo "--- Listing src/assets/images/ ---"
+          ls -l src/assets/images/
+
       - name: Commit and push if there are changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:

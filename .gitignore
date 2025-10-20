@@ -29,3 +29,7 @@ yarn.lock
 # ide
 .idea
 *.iml
+
+
+# 允许提交这个特定目录下的所有内容
+!src/assets/images/

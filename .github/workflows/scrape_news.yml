@@ -1,52 +1,42 @@
 name: Scrape Telegram News
 
-# 触发器配置
 on:
-  # 1. 定时触发：使用 cron 语法，'*/1 * * * *' 表示每1分钟运行一次
   schedule:
     - cron: '*/1 * * * *'
-  
-  # 2. 手动触发：允许你在 GitHub Actions 页面手动点击 "Run workflow"
   workflow_dispatch:
 
 jobs:
   scrape:
     runs-on: ubuntu-latest
-
-    # 为工作流中的所有作业设置权限
     permissions:
-      contents: write # 允许 actions/checkout 和后续步骤向仓库写入内容
+      contents: write
       
     steps:
-      # 第一步：检出你的仓库代码
-      # 这样工作流才能访问你的 scraper.py 和 src/content/posts 目录
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 第二步：设置 Python 环境
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # 你可以根据需要选择 Python 版本
+          python-version: '3.10'
 
-      # 第三步：安装 Python 依赖
-      # -r requirements.txt 会安装你在该文件中指定的所有库
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 第四步：运行爬虫脚本
       - name: Run scraper script
         run: python scraper.py
 
-      # 第五步：如果脚本生成了新文件，则自动提交并推送到仓库
+      # 【修改点】更新 file_pattern 以包含图片和 Markdown 文件
       - name: Commit and push if there are changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "📰 chore: Auto-scrape new articles from Telegram channel"
+          commit_message: "📰 chore: Auto-scrape new articles and images"
           commit_user_name: "GitHub Actions"
           commit_user_email: "actions@github.com"
           commit_author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-          # 只提交指定目录下的变更
-          file_pattern: 'src/content/posts/*.md'
+          # 使用多行模式来指定多个文件/目录模式
+          file_pattern: |
+            src/content/posts/*.md
+            src/assets/images/*.*

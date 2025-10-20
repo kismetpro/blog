@@ -2,9 +2,9 @@
 title: Far Away From Home
 published: 2025-10-21
 description: '离家'
-image: 
+image: ''
 tags: [音乐]
-category: '音乐'
+y: '音: '音乐'
 draft: false
 lang: ''
 ---

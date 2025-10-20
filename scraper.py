@@ -3,12 +3,12 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import re
-from urllib.parse import urlparse # 新增导入，用于解析URL获取文件扩展名
+from urllib.parse import urlparse
 
 # --- 配置 ---
 URL = "https://t.me/s/zaihuapd"
 OUTPUT_DIR = "src/content/posts"
-IMAGE_OUTPUT_DIR = "src/assets/images" # 新增：图片保存目录
+IMAGE_OUTPUT_DIR = "src/assets/images"
 # --- 结束配置 ---
 
 def download_image(url, post_id):
@@ -17,26 +17,23 @@ def download_image(url, post_id):
         return None
 
     try:
-        # 从URL中提取文件扩展名，处理掉可能的查询参数
         path = urlparse(url).path
         ext = os.path.splitext(path)[1]
-        if not ext: # 如果没有扩展名，默认使用 .jpg
+        if not ext:
             ext = '.jpg'
             
         filename = f"{post_id}{ext}"
         filepath = os.path.join(IMAGE_OUTPUT_DIR, filename)
 
-        # 发送请求下载图片
         img_response = requests.get(url, stream=True, timeout=20)
         img_response.raise_for_status()
 
-        # 以二进制写模式保存图片文件
         with open(filepath, 'wb') as f:
             for chunk in img_response.iter_content(chunk_size=8192):
                 f.write(chunk)
         
         print(f"🖼️  成功下载图片: {filepath}")
-        return filepath # 返回本地文件路径
+        return filepath
     except requests.RequestException as e:
         print(f"❌ 下载图片失败 {url}: {e}")
         return None
@@ -47,26 +44,31 @@ def download_image(url, post_id):
 def create_markdown_file(post_id, title, published_date, local_image_path, body_content, source_text):
     """根据提取的信息生成 Markdown 文件内容"""
     
-    clean_title = title.replace("'", "’").replace('"', '”').strip()
-    description = clean_title
+    # 【修改点】为 YAML frontmatter 准备标题
+    # 1. 清理首尾空格
+    clean_title = title.strip()
+    # 2. 为 description 准备一个安全的版本（单引号包裹，并转义内部单引号）
+    safe_description = clean_title.replace("'", "\\'")
+    # 3. 为 title 准备双引号包裹的版本，并转义内部双引号
+    escaped_title_for_yaml = clean_title.replace('"', '\\"')
 
-    # 【修改点】根据本地图片路径生成相对路径
-    image_frontmatter = "image: ''"
+    # 【修改点】生成 image 参数，不带引号
+    image_frontmatter = "image: ''" # 默认值，带引号以表示空字符串
     if local_image_path:
         image_filename = os.path.basename(local_image_path)
-        # 相对路径：从 posts/ -> ../ -> assets/images/
         relative_image_path = f"../assets/images/{image_filename}"
-        image_frontmatter = f"image: '{relative_image_path}'"
+        # 按要求移除路径的引号
+        image_frontmatter = f"image: {relative_image_path}"
 
-    # 正文部分不再包含图片标签
-    body_markdown = f"## {title}\n\n{body_content.strip()}\n\n"
+    body_markdown = f"## {clean_title}\n\n{body_content.strip()}\n\n"
     if source_text:
         body_markdown += f"*{source_text.strip()}*"
 
-    content = f"""---
-title: '{clean_title}'
+    # 【修改点】使用 f'''...''' 多行字符串来构建 frontmatter，并应用新的格式
+    content = f'''---
+title: "{escaped_title_for_yaml}"
 published: {published_date}
-description: '{description}'
+description: '{safe_description}'
 {image_frontmatter}
 tags: [科技频道]
 category: '科技频道'
@@ -75,7 +77,7 @@ lang: ''
 ---
 
 {body_markdown}
-"""
+'''
     
     filename = f"kjpd{post_id}.md"
     filepath = os.path.join(OUTPUT_DIR, filename)
@@ -91,7 +93,6 @@ def scrape_news():
     """主爬虫函数"""
     print("🚀 开始爬取新闻...")
     
-    # 【修改点】确保两个输出目录都存在
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     os.makedirs(IMAGE_OUTPUT_DIR, exist_ok=True)
     
@@ -137,7 +138,6 @@ def scrape_news():
         title_tag = message_text_div.find('b')
         title = title_tag.get_text(strip=True) if title_tag else f"无标题新闻 - {post_id}"
 
-        # 提取图片 URL
         image_url = ''
         photo_wrap = widget_message.find('a', class_='tgme_widget_message_photo_wrap')
         if photo_wrap and 'style' in photo_wrap.attrs:
@@ -145,10 +145,8 @@ def scrape_news():
             if match:
                 image_url = match.group(1)
         
-        # 【修改点】下载图片并获取本地路径
         local_image_path = download_image(image_url, post_id)
 
-        # 提取正文和来源... (逻辑不变)
         content_soup = BeautifulSoup(str(message_text_div), 'html.parser')
         if content_soup.b:
             content_soup.b.decompose()
@@ -162,9 +160,7 @@ def scrape_news():
         body_content = content_soup.get_text(separator='\n', strip=True)
         body_content = re.sub(r'群友投稿补充\s*', '', body_content)
         
-        # 生成 Markdown 文件
         published_date = datetime.now().strftime('%Y-%m-%d')
-        # 【修改点】传入本地图片路径
         create_markdown_file(post_id, title, published_date, local_image_path, body_content, source_text)
 
     if new_posts_count == 0:

@@ -28,7 +28,6 @@ jobs:
       - name: Run scraper script
         run: python scraper.py
 
-      # 【修改点】更新 file_pattern 以包含图片和 Markdown 文件
       - name: Commit and push if there are changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
@@ -36,7 +35,6 @@ jobs:
           commit_user_name: "GitHub Actions"
           commit_user_email: "actions@github.com"
           commit_author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-          # 使用多行模式来指定多个文件/目录模式
           file_pattern: |
             src/content/posts/*.md
             src/assets/images/*.*

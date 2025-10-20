@@ -9,7 +9,6 @@ draft: false
 lang: ''
 ---
 
-
 Far Away From Home
 
 I'm loving living every single day but sometimes I feel so

@@ -2,7 +2,7 @@
 title: 尘埃与泪
 published: 2025-10-21
 description: '那一天'
-image:
+image: ''
 tags: [回忆]
 category: '随写'
 draft: false

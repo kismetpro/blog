@@ -2,7 +2,7 @@ name: Scrape Telegram News
 
 on:
   schedule:
-    - cron: '*/1 * * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -28,23 +28,17 @@ jobs:
       - name: Run scraper script
         run: python scraper.py
 
-      # 【新增的调试步骤】
-      # 这一步会列出工作目录的内容，特别是我们关心的图片和md文件
-      # 如果图片下载成功，你应该能在这里看到它们的文件名
+      # (可选) 这是一个调试步骤，确认文件是否已创建。如果一切正常，可以删除此步骤。
       - name: Debug - List created files
-        run: |
-          echo "--- Listing src/content/posts/ ---"
-          ls -l src/content/posts/
-          echo "--- Listing src/assets/images/ ---"
-          ls -l src/assets/images/
+        run: ls -R src
 
+      # 【核心修改】将 file_pattern 改为单行，用空格分隔，这是最稳妥的方式。
       - name: Commit and push if there are changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "📰 chore: Auto-scrape new articles and images"
-          commit_user_name: "GitHub Actions"
+          commit_user_name: "GitHub Actions Bot"
           commit_user_email: "actions@github.com"
           commit_author: "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
-          file_pattern: |
-            src/content/posts/*.md
-            src/assets/images/*.*
+          # 将多个路径模式放在一行，用空格隔开
+          file_pattern: 'src/content/posts/*.md src/assets/images/*.*'

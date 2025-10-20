@@ -15,58 +15,52 @@ def download_image(url, post_id):
     """下载图片并保存到本地"""
     if not url:
         return None
-
     try:
         path = urlparse(url).path
         ext = os.path.splitext(path)[1]
-        if not ext:
-            ext = '.jpg'
-            
+        if not ext: ext = '.jpg'
         filename = f"{post_id}{ext}"
         filepath = os.path.join(IMAGE_OUTPUT_DIR, filename)
-
         img_response = requests.get(url, stream=True, timeout=20)
         img_response.raise_for_status()
-
         with open(filepath, 'wb') as f:
             for chunk in img_response.iter_content(chunk_size=8192):
                 f.write(chunk)
-        
         print(f"🖼️  成功下载图片: {filepath}")
         return filepath
-    except requests.RequestException as e:
-        print(f"❌ 下载图片失败 {url}: {e}")
-        return None
     except Exception as e:
-        print(f"❌ 保存图片时出错: {e}")
+        print(f"❌ 下载或保存图片失败 {url}: {e}")
         return None
 
 def create_markdown_file(post_id, title, published_date, local_image_path, body_content, source_text):
     """根据提取的信息生成 Markdown 文件内容"""
     
-    # 【修改点】为 YAML frontmatter 准备标题
-    # 1. 清理首尾空格
     clean_title = title.strip()
-    # 2. 为 description 准备一个安全的版本（单引号包裹，并转义内部单引号）
     safe_description = clean_title.replace("'", "\\'")
-    # 3. 为 title 准备双引号包裹的版本，并转义内部双引号
-    escaped_title_for_yaml = clean_title.replace('"', '\\"')
 
-    # 【修改点】生成 image 参数，不带引号
-    image_frontmatter = "image: ''" # 默认值，带引号以表示空字符串
+    # 【核心修改点】智能判断是否需要为 title 加引号
+    # 如果标题中包含冒号等特殊字符，必须加引号，否则 YAML 会解析错误
+    if ':' in clean_title or '"' in clean_title or "'" in clean_title:
+        # 发现危险字符，为了安全，使用双引号包裹
+        escaped_title_for_yaml = clean_title.replace('"', '\\"')
+        title_line = f'title: "{escaped_title_for_yaml}"'
+        print(f"⚠️  标题 '{clean_title[:30]}...' 包含特殊字符，已自动添加引号以确保安全。")
+    else:
+        # 标题安全，按要求不加任何引号
+        title_line = f'title: {clean_title}'
+
+    image_frontmatter = "image: ''"
     if local_image_path:
         image_filename = os.path.basename(local_image_path)
         relative_image_path = f"../assets/images/{image_filename}"
-        # 按要求移除路径的引号
-        image_frontmatter = f"image: {relative_image_path}"
+        image_frontmatter = f"image: {relative_image_path}" # image 路径不加引号
 
     body_markdown = f"## {clean_title}\n\n{body_content.strip()}\n\n"
     if source_text:
         body_markdown += f"*{source_text.strip()}*"
 
-    # 【修改点】使用 f'''...''' 多行字符串来构建 frontmatter，并应用新的格式
     content = f'''---
-title: "{escaped_title_for_yaml}"
+{title_line}
 published: {published_date}
 description: '{safe_description}'
 {image_frontmatter}
@@ -89,6 +83,7 @@ lang: ''
     except Exception as e:
         print(f"❌ 创建文件时出错 {filepath}: {e}")
 
+# ... scrape_news() 函数保持不变 ...
 def scrape_news():
     """主爬虫函数"""
     print("🚀 开始爬取新闻...")
